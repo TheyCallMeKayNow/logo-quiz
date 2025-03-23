@@ -1,5 +1,6 @@
-Logo quiz:
-Download by using the 'releases' tab.
-The source code provied may be edited and published, as long as the name of the owner is mentioned in the credits.
+# README
 
-Contact: Click bug report in the quiz
+## How to play?
+
+## PC:
+You can choose one of the two options mentioned below:
