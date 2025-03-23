@@ -2,5 +2,5 @@
 
 ## How to play?
 
-## PC:
+### PC:
 You can choose one of the two options mentioned below:
