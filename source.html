@@ -1,4 +1,4 @@
-		        // by TheyCallMeKay
+				// By TheyCallMeKay
 
 <!DOCTYPE html>
 <html lang="en">
@@ -16,15 +16,21 @@
 </head>
 <body>
     <h1>Logo Quiz</h1>
+    <p id="live-score" style="font-size: 20px; font-weight: bold;">Score: 0 / 0 (0%)</p>
+    
     <div class="quiz-container">
         <img id="logo" class="logo" src="" alt="Logo">
         <input type="text" id="answer" placeholder="Type your answer">
-        <button onclick="checkAnswer()">Submit</button>
+        <button id="submit-btn" onclick="checkAnswer()">Submit</button>
         <p id="feedback"></p>
         <p id="score" class="hidden"></p>
+        <p id="bug-report">
+            <a href="https://form.jotform.com/250745422677058" target="_blank">Bug Report or Suggestion?</a>
+        </p>
+        <div id="share-buttons" class="hidden"></div>
     </div>
-    
-    <script>
+
+	<script>
         let logos = [
             { src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg", answer: "Amazon" },
             { src: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg", answer: "Apple" },
@@ -34,7 +40,7 @@
             { src: "https://logoeps.com/wp-content/uploads/2013/04/puma-se-eps-vector-logo.png", answer: "Puma" },
             { src: "https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png", answer: "Facebook" },
             { src: "https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png", answer: "Instagram" },
-            { src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Logo_of_Twitter.svg/2491px-Logo_of_Twitter.svg.png", answer: "Twitter" },
+            { src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Logo_of_Twitter.svg/2491px-Logo_of_Twitter.svg.png", answer: ["Twitter", "X"] },
             { src: "https://i0.wp.com/socialkings.online/wp-content/uploads/2021/04/Artboard-1yt.png?fit=650%2C534&ssl=1", answer: "YouTube" },
             { src: "https://upload.wikimedia.org/wikipedia/commons/b/bb/Tesla_T_symbol.svg", answer: "Tesla" },
             { src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg", answer: "Microsoft" },
@@ -46,10 +52,8 @@
             { src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8BsZGXKrfLacL48QEE1mmY-dL8EV3EJxGsw&s", answer: "Red Bull" },
             { src: "https://1000logos.net/wp-content/uploads/2021/04/Lego-logo.png", answer: "Lego" },
             { src: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Intel_logo_%282006-2020%29.svg/2560px-Intel_logo_%282006-2020%29.svg.png", answer: "Intel" }
-        ];
-        
-        logos = logos.sort(() => Math.random() - 0.5);
-        
+        ].sort(() => Math.random() - 0.5);
+
         let currentIndex = 0;
         let correctAnswers = 0;
 
@@ -57,62 +61,86 @@
             document.getElementById("logo").src = logos[currentIndex].src;
             document.getElementById("answer").value = "";
             document.getElementById("feedback").innerText = "";
+            updateScore();
         }
 
-        function checkAnswer() {
-            let userAnswer = document.getElementById("answer").value.trim().toLowerCase();
-            let correctAnswer = logos[currentIndex].answer;
-            
-            if (Array.isArray(correctAnswer)) {
-                correctAnswer = correctAnswer.map(ans => ans.toLowerCase());
-            } else {
-                correctAnswer = [correctAnswer.toLowerCase()];
-            }
-            
-            if (correctAnswer.includes(userAnswer)) {
-                correctAnswers++;
-                document.getElementById("feedback").innerText = "Correct! 🎉";
-              
-                confetti({ particleCount: 80, spread: 60, origin: { x: 0.3, y: 0.5 } });
-                confetti({ particleCount: 80, spread: 60, origin: { x: 0.7, y: 0.5 } });
+function checkAnswer() {
+    let answerInput = document.getElementById("answer");
+    let submitBtn = document.getElementById("submit-btn");
+    let feedback = document.getElementById("feedback");
 
-            } else {
-                if (currentIndex < logos.length - 1) {
-                    document.getElementById("feedback").innerText = `Wrong! The correct answer was: ${logos[currentIndex].answer[0] || logos[currentIndex].answer}`;
-                } else {
-                    document.getElementById("feedback").innerText = "";
-                }
-            }
-            
-            currentIndex++;
-            if (currentIndex < logos.length) {
-                setTimeout(loadLogo, 1500);
-            } else {
-                setTimeout(showScore, 1500);
-            }
+    let userAnswer = answerInput.value.trim().toLowerCase();
+    let correctAnswer = logos[currentIndex].answer;
+    correctAnswer = Array.isArray(correctAnswer) ? correctAnswer.map(a => a.toLowerCase()) : [correctAnswer.toLowerCase()];
+
+    answerInput.disabled = true;
+    submitBtn.disabled = true;
+
+    if (correctAnswer.includes(userAnswer)) {
+        correctAnswers++;
+        feedback.innerText = "✅ Correct!";
+        confetti({ particleCount: 80, spread: 60, origin: { x: 0.3, y: 0.5 } });
+        confetti({ particleCount: 80, spread: 60, origin: { x: 0.7, y: 0.5 } });
+    } else {
+        feedback.innerText = `❌ Incorrect! The correct answer was: ${logos[currentIndex].answer}`;
+    }
+
+    currentIndex++;
+    updateScore();
+
+    if (currentIndex < logos.length) {
+        setTimeout(() => {
+            loadLogo();
+            answerInput.disabled = false;
+            submitBtn.disabled = false;
+            answerInput.focus();
+        }, 1500);
+    } else {
+        setTimeout(showScore, 1500);
+    }
+}
+
+        function updateScore() {
+            let scorePercentage = currentIndex > 0 ? Math.round((correctAnswers / currentIndex) * 100) : 0;
+            document.getElementById("live-score").innerText = `Score: ${correctAnswers} / ${currentIndex} (${scorePercentage}%)`;
         }
-        
+
         function showScore() {
-            let scoreText = `Your score: ${correctAnswers} / ${logos.length} (${Math.round((correctAnswers / logos.length) * 100)}%)`;
-            document.getElementById("score").innerText = scoreText;
+            let finalScore = `Your endscore: ${correctAnswers} / ${logos.length} (${Math.round((correctAnswers / logos.length) * 100)}%)`;
+            document.getElementById("score").innerText = finalScore;
             document.getElementById("score").classList.remove("hidden");
             document.getElementById("logo").classList.add("hidden");
             document.getElementById("answer").classList.add("hidden");
             document.querySelector("button").classList.add("hidden");
+
+            let quizUrl = window.location.origin + window.location.pathname;
+            let shareLink = `${quizUrl}?score=${correctAnswers}&total=${logos.length}`;
+            let shareText = encodeURIComponent(`🔥 I got ${correctAnswers} / ${logos.length} right in the Logo Quiz! Can you do better? 🚀 Play here: ${shareLink}`);
+
+            document.getElementById("share-buttons").innerHTML = `
+                <p>📢 Share your score:</p>
+                <a href="https://api.whatsapp.com/send?text=${shareText}" target="_blank">📱 WhatsApp</a> |
+                <a href="https://twitter.com/intent/tweet?text=${shareText}" target="_blank">🐦 Twitter</a> |
+                <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}" target="_blank">📘 Facebook</a>
+                <br><br>
+                <input type="text" value="${shareLink}" id="shareLink" readonly style="width: 80%; text-align: center;">
+                <button onclick="copyLink()">📋 Copy link</button>
+            `;
+            document.getElementById("share-buttons").classList.remove("hidden");
+        }
+
+        function copyLink() {
+            let linkField = document.getElementById("shareLink");
+            linkField.select();
+            document.execCommand("copy");
+            alert("✅ Link copied!");
         }
 
         document.getElementById("answer").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                checkAnswer();
-            }
+            if (event.key === "Enter") checkAnswer();
         });
 
         loadLogo();
-        let bugReport = document.createElement("p");
-        bugReport.innerHTML = '<a href="https://form.jotform.com/250745422677058" target="_blank">Bug Report of Suggestie?</a>';
-        document.querySelector(".quiz-container").appendChild(bugReport);
-
-        loadLogo(); // Zorg ervoor dat de quiz correct start
     </script>
 </body>
 </html>
